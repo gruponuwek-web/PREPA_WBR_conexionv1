@@ -39,7 +39,10 @@ function abrirMinuta(sid) {
         // Nombres reales de KPIs según el rol
         const kpiNombres = _getKpiNombresMinuta(cal?.Rol || v.Rol);
         const kpiRows = cal
-          ? Object.entries(cal).filter(([k]) => k.startsWith('KPI_'))
+          ? Object.entries(cal)
+              .filter(([k]) => k.startsWith('KPI_'))
+              .filter(([k]) => parseInt(k.replace('KPI_','')) <= _maxKpisParaRol(cal?.Rol || v.Rol))
+              .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')))
               .map(([k, val]) => {
                 const idx    = parseInt(k.replace('KPI_','')) - 1;
                 const nombre = (kpiNombres.length > idx && kpiNombres[idx]) ? kpiNombres[idx] : k.replace('KPI_','KPI ');
@@ -51,7 +54,7 @@ function abrirMinuta(sid) {
               }).join('')
           : '';
 
-        const pct = cal ? pctPill(cal['% Cumplimiento']) : '';
+        const pct = cal ? pctPillFromCal(cal) : '';
 
         const actsHtml = vActs.map(a => `
           <div style="font-size:12px;padding:7px 10px;background:#f8fafc;border-radius:6px;margin-bottom:4px;border-left:3px solid #2563eb">
