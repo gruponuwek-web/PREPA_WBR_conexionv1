@@ -48,6 +48,7 @@ function abrirMinuta(sid) {
           ? Object.entries(cal)
               .filter(([k]) => k.startsWith('KPI_'))
               .filter(([k]) => parseInt(k.replace('KPI_','')) <= maxKpis)
+              .filter(([,v]) => v !== 'N/A' && v !== '' && v !== null && v !== undefined)
               .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')))
               .map(([k, val]) => {
                 const idx    = parseInt(k.replace('KPI_','')) - 1;

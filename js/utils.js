@@ -6,6 +6,8 @@
    (pctPill, badges, fmtDate) y la carga inicial de datos.
    ============================================================ */
 
+const API   = 'https://script.google.com/macros/s/AKfycbwBHju-x9W2fEWTIxYFpjyDBQyWKX21jFRpAdy9Iy_vWGDQsSuaqJW8GxSEM0V-k7NJ/exec';
+const COORD = 'Leonardo Hernández';
 
 // Estado global compartido por todos los módulos
 let state = { equipo:[], kpis:{}, clasificaciones:[], calificaciones:[], acciones:[], seguimiento:[], descubrimientos:[] };
@@ -73,21 +75,21 @@ function pctPill(val) {
   return `<span class="pct-pill ${cls}">${pct}%</span>`;
 }
 
+// Máximo de KPIs por rol
+const MAX_KPIS_POR_ROL = { 'Setter': 5, 'Vendedor': 6, 'Coordinador': 6 };
+function _maxKpisParaRol(rol) {
+  return MAX_KPIS_POR_ROL[String(rol||'').trim()] || 6;
+}
+
 // Calcula % cumplimiento real contando KPI_1..KPI_N directamente
 function calcPctFromKpis(cal, rol) {
   if (!cal) return null;
-  const kpiNombres = _getKpiNombresForCal(rol);
-  // Entradas KPI que tienen valor no vacío
-  const todasKpis = Object.entries(cal)
+  const total = _maxKpisParaRol(rol);
+  const cumplidos = Object.entries(cal)
     .filter(([k]) => k.startsWith('KPI_'))
-    .filter(([k,v]) => v !== '' && v !== null && v !== undefined);
-  // Si tenemos nombres de KPIs del rol, usamos ese número como total
-  // Si no, contamos las entradas no vacías
-  const total = kpiNombres.length || todasKpis.length;
-  if (!total) return null;
-  const cumplidos = todasKpis
     .filter(([k]) => parseInt(k.replace('KPI_','')) <= total)
-    .filter(([k,v]) => v === '✅' || v === true || String(v).toLowerCase() === 'true')
+    .filter(([,v]) => v !== 'N/A' && v !== '' && v !== null)
+    .filter(([,v]) => v === '✅' || v === true || String(v).toLowerCase() === 'true')
     .length;
   return Math.round(cumplidos / total * 100);
 }

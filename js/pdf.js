@@ -85,6 +85,7 @@ function _buildPdf(ses) {
     const kpiEntries = Object.entries(cal)
       .filter(([k]) => k.startsWith('KPI_'))
       .filter(([k]) => parseInt(k.replace('KPI_','')) <= _maxKpisParaRol(cal?.Rol || v.Rol))
+      .filter(([,v]) => v !== 'N/A' && v !== '' && v !== null && v !== undefined)
       .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')));
 
     if (!kpiEntries.length) {
