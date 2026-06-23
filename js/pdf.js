@@ -82,11 +82,9 @@ function _buildPdf(ses) {
       y += 10; return;
     }
 
-    const maxKpis   = kpiNombres.length || 99;
     const kpiEntries = Object.entries(cal)
       .filter(([k]) => k.startsWith('KPI_'))
-      .filter(([k, v]) => v !== '' && v !== null && v !== undefined && String(v).trim() !== '')
-      .filter(([k]) => parseInt(k.replace('KPI_','')) <= maxKpis)
+      .filter(([k]) => parseInt(k.replace('KPI_','')) <= _maxKpisParaRol(cal?.Rol || v.Rol))
       .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')));
 
     if (!kpiEntries.length) {
