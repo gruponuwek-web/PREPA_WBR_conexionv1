@@ -1,10 +1,15 @@
 /* ============================================================
    WBR Portal — Módulo: Minuta
-   ============================================================
-   Contiene: abrirMinuta, cerrarMinuta, imprimirMinuta.
-   Para cambiar el layout de la minuta imprimible, edita solo
-   este archivo.
    ============================================================ */
+
+// Busca nombres de KPIs por rol de forma flexible (trim + case-insensitive)
+function _getKpiNombresMinuta(rol) {
+  if (!state.kpis || !rol) return [];
+  const r = String(rol).trim();
+  if (state.kpis[r]) return state.kpis[r];
+  const key = Object.keys(state.kpis).find(k => k.toLowerCase() === r.toLowerCase());
+  return key ? state.kpis[key] : [];
+}
 
 function abrirMinuta(sid) {
   const overlay = document.getElementById('minutaOverlay');
@@ -25,18 +30,19 @@ function abrirMinuta(sid) {
       const semana = califs[0]?.Semana || '';
 
       const vendHtml = equipo.map(v => {
-        const cal   = califs.find(c => c.Vendedor === v.Nombre);
-        const desc  = descs.find(d  => d.Vendedor === v.Nombre);
-        const vActs = acts.filter(a  => a.Vendedor === v.Nombre);
+        // Usar trim() para evitar problemas con espacios en nombres
+        const cal   = califs.find(c => String(c.Vendedor).trim() === String(v.Nombre).trim());
+        const desc  = descs.find(d  => String(d.Vendedor).trim() === String(v.Nombre).trim());
+        const vActs = acts.filter(a  => String(a.Vendedor).trim() === String(v.Nombre).trim());
         if (!cal && !desc && !vActs.length) return '';
 
-        // Nombres reales de KPIs según el rol del vendedor
-        const kpiNombres = (state.kpis && cal) ? (state.kpis[cal.Rol] || []) : [];
+        // Nombres reales de KPIs según el rol
+        const kpiNombres = _getKpiNombresMinuta(cal?.Rol || v.Rol);
         const kpiRows = cal
           ? Object.entries(cal).filter(([k]) => k.startsWith('KPI_'))
-              .map(([k, val], i) => {
+              .map(([k, val]) => {
                 const idx    = parseInt(k.replace('KPI_','')) - 1;
-                const nombre = kpiNombres[idx] || k.replace('KPI_','KPI ');
+                const nombre = (kpiNombres.length > idx && kpiNombres[idx]) ? kpiNombres[idx] : k.replace('KPI_','KPI ');
                 const cumple = val === '✅' || val === true || String(val).toLowerCase() === 'true';
                 return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid #f0f2f6">
                   <span style="color:#4b5563">${nombre}</span>
@@ -97,10 +103,5 @@ function abrirMinuta(sid) {
   }, 150);
 }
 
-function cerrarMinuta() {
-  document.getElementById('minutaOverlay').style.display = 'none';
-}
-
-function imprimirMinuta() {
-  window.print();
-}
+function cerrarMinuta()   { document.getElementById('minutaOverlay').style.display = 'none'; }
+function imprimirMinuta() { window.print(); }
