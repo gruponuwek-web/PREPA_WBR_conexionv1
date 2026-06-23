@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WBR · Portal de Seguimiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<!-- ══ ESTILOS ══════════════════════════════════════════════════
+  main.css        → layout base, componentes globales (sidebar, cards, forms, botones, badges…)
+  calendar.css    → celdas, dots, vista semana/mes del calendario
+  vendedor-flow.css → pasos del flujo WBR, tarjetas de acción inline, minuta imprimible
+════════════════════════════════════════════════════════════════ -->
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/vendedor-flow.css">
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>WBR Portal</h1>
+    <p>Seguimiento Comercial</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="navigate(this,'dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-label">Proceso WBR</div>
+    <div class="nav-item" onclick="navigate(this,'calificar')"><span class="icon">✅</span> Calificar WBR</div>
+    <div class="nav-item" onclick="navigate(this,'acciones')"><span class="icon">📋</span> Plan de Acciones</div>
+    <div class="nav-label">Seguimiento</div>
+    <div class="nav-item" onclick="navigate(this,'agenda')"><span class="icon">📅</span> Agenda</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="coordinator-badge">
+      <div class="avatar" id="avatarInitials">LH</div>
+      <div>
+        <div class="cname" id="coordName">Leonardo H.</div>
+        <div class="crole">Coordinador</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── DASHBOARD ──────────────────────────────────────────── -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header"><h2>Dashboard</h2><p>Resumen del seguimiento WBR del equipo</p></div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">📅 Período</span>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--text2);white-space:nowrap">Desde</label>
+          <input type="date" id="dashFechaInicio" onchange="renderDashboard()" style="width:150px">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--text2);white-space:nowrap">Hasta</label>
+          <input type="date" id="dashFechaFin" onchange="renderDashboard()" style="width:150px">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="clearFiltroFecha()">✕ Limpiar</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="setFiltroRapido('semana')">Esta semana</button>
+        <button class="btn btn-ghost btn-sm" onclick="setFiltroRapido('mes')">Este mes</button>
+        <button class="btn btn-ghost btn-sm" onclick="setFiltroRapido('trimestre')">Trimestre</button>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:16px">
+      <div class="stat-card" style="--accent-color:var(--accent)"><div class="s-label">Sesiones WBR</div><div class="s-value" id="statSesiones">—</div><div class="s-sub">Registradas</div></div>
+      <div class="stat-card" style="--accent-color:var(--yellow)"><div class="s-label">Acciones Pendientes</div><div class="s-value" id="statPendientes">—</div><div class="s-sub">Sin resolver</div></div>
+      <div class="stat-card" style="--accent-color:var(--green)"><div class="s-label">Acciones Cumplidas</div><div class="s-value" id="statCerradas">—</div><div class="s-sub">Completadas</div></div>
+      <div class="stat-card" style="--accent-color:#7c3aed"><div class="s-label">% KPI Promedio</div><div class="s-value" id="statKpi">—</div><div class="s-sub">Del equipo</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-title">👥 Equipo</div><div id="equipoList"><div class="loading"><div class="spinner"></div></div></div></div>
+      <div class="card"><div class="card-title">🔥 Acciones Abiertas por Prioridad</div><div id="prioChart"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <div class="card" style="padding:0">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border)"><div class="card-title" style="margin:0">📋 Últimas Acciones</div></div>
+      <div id="ultimasAcciones"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <!-- ── CALIFICAR WBR ──────────────────────────────────────── -->
+  <div class="page" id="page-calificar">
+    <div class="page-header"><h2>Calificar WBR</h2><p>Crea la sesión, califica KPIs y consulta el historial</p></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'tab-nueva')">✅ Nueva Sesión</button>
+      <button class="tab" onclick="switchTab(this,'tab-historial')">📜 Historial de Sesiones</button>
+    </div>
+
+    <div class="tab-content active" id="tab-nueva">
+      <div class="step-box">
+        <div class="step-header">
+          <div class="step-num" id="stepNum1">1</div>
+          <div><div class="step-title">Crear Sesión</div><div class="step-sub">Define el ID, fecha y semana de esta WBR</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="form-group" style="margin:0">
+            <label>Fecha de la Sesión</label>
+            <input type="date" id="sesionFecha" onchange="document.getElementById('sesionSemana').value=calcSemana(this.value)">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Sesión ID</label>
+            <input type="text" id="sesionId" readonly style="background:var(--surface2);color:var(--text2);cursor:not-allowed">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Semana (automático)</label>
+            <input type="text" id="sesionSemana" readonly style="background:var(--surface2);color:var(--text2);cursor:not-allowed">
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" id="btnCrearSesion" onclick="crearSesion()">Crear Sesión →</button>
+        </div>
+      </div>
+
+      <div id="paso2" style="display:none">
+        <div class="step-box" style="margin-bottom:16px">
+          <div class="step-header" style="margin-bottom:0">
+            <div class="step-num done">2</div>
+            <div><div class="step-title">Evaluar Vendedores</div><div class="step-sub" id="sesionInfo">Sesión activa</div></div>
+          </div>
+        </div>
+        <div id="vendedoresList"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-historial">
+      <div class="card" style="padding:0">
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
+          <div class="card-title" style="margin:0">📜 Historial de Sesiones WBR</div>
+        </div>
+        <div id="historialContent"><div class="loading"><div class="spinner"></div> Cargando historial...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLAN DE ACCIONES ────────────────────────────────────── -->
+  <div class="page" id="page-acciones">
+    <div class="page-header"><h2>Plan de Acciones</h2><p>Compromisos generados en cada sesión WBR</p></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="filter-bar" style="margin:0">
+        <select id="filtroVendedor" onchange="renderAcciones()"><option value="">Todos los vendedores</option></select>
+        <select id="filtroEstatus" onchange="renderAcciones()"><option value="">Todos los estatus</option><option>Pendiente</option><option>En Proceso</option><option>Cerrado</option></select>
+        <select id="filtroPrioridad" onchange="renderAcciones()"><option value="">Toda prioridad</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="openModalAccion()">+ Nueva Acción</button>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vendedor</th><th>Clasificación</th><th>Prioridad</th><th>Tipo</th><th>Detalle</th><th>Cliente</th><th>Compromiso</th><th>Estatus</th><th></th></tr></thead>
+          <tbody id="accionesTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AGENDA ──────────────────────────────────────────────── -->
+  <div class="page" id="page-agenda">
+    <div class="page-header"><h2>Agenda de Seguimiento</h2><p>Visualiza compromisos por fecha</p></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="calFiltroVendedor" onchange="renderCalendario()" style="width:auto;min-width:160px"><option value="">Todos los vendedores</option></select>
+        <select id="calFiltroEstatus" onchange="renderCalendario()" style="width:auto;min-width:140px"><option value="">Todos los estatus</option><option>Pendiente</option><option>En Proceso</option><option>Cerrado</option></select>
+        <select id="calFiltroClasif" onchange="renderCalendario()" style="width:auto;min-width:150px"><option value="">Todas las clasificaciones</option><option>Prospección</option><option>Fidelización</option><option>Crecimiento BCG</option><option>Recuperación</option></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="tabs" style="margin:0">
+          <button class="tab active" id="tabMes" onclick="setVista('mes',this)">📅 Mes</button>
+          <button class="tab" id="tabSemana" onclick="setVista('semana',this)">📆 Semana</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="navFecha(-1)">‹</button>
+        <span id="calTitulo" style="font-weight:600;font-size:14px;min-width:160px;text-align:center"></span>
+        <button class="btn btn-ghost btn-sm" onclick="navFecha(1)">›</button>
+        <button class="btn btn-ghost btn-sm" onclick="irHoy()">Hoy</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden"><div id="calGrid"></div></div>
+    <div id="calDetalle" style="display:none;margin-top:14px"></div>
+  </div>
+
+  <!-- ── FLOATING WBR BUTTON ────────────────────────────────── -->
+  <div id="floatingWBR" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow-md);min-width:220px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Sesión activa</div>
+      <div id="floatingSesionInfo" style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="volverASesion()" style="flex:1">↩ Continuar</button>
+        <button class="btn btn-sm" onclick="concluirWBR()" style="flex:1;background:#dc2626;color:#fff">✓ Concluir</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ MODAL NUEVA ACCIÓN ════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAccion">
+  <div class="modal">
+    <div class="modal-header"><h3>Nueva Acción</h3><button class="modal-close" onclick="closeModal('modalAccion')">✕</button></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Sesión ID</label><select id="mSesionId"></select></div>
+      <div class="form-group"><label>Vendedor</label><select id="mVendedor"></select></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Clasificación</label><select id="mClasificacion"><option>Prospección</option><option>Fidelización</option><option>Crecimiento BCG</option><option>Recuperación</option></select></div>
+      <div class="form-group"><label>Prioridad</label><select id="mPrioridad"><option>Alta</option><option>Media</option><option>Baja</option></select></div>
+    </div>
+    <div class="form-group"><label>Descripción</label>
+      <select id="mDescripcion"><option value="Llamada">Llamada</option><option value="Whatsapp">Whatsapp</option><option value="Email">Email</option><option value="Reunión">Reunión</option><option value="Visita">Visita</option><option value="Capacitación">Capacitación</option></select>
+    </div>
+    <div class="form-group"><label>Resultado Esperado</label>
+      <select id="mResultado"><option>Cita agendada</option><option>Cotización enviada</option><option>Contrato firmado</option><option>Pedido realizado</option><option>Acuerdo de continuidad</option><option>Reactivación confirmada</option><option>Capacitación completada</option><option>Sin respuesta / Seguimiento pendiente</option></select>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Cliente</label><input type="text" id="mCliente" placeholder="Nombre del cliente"></div>
+      <div class="form-group"><label>Acompañamiento</label><select id="mAcompa"></select></div>
+    </div>
+    <div class="form-group"><label>Fecha Compromiso</label><input type="date" id="mFechaCompromiso"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-ghost" onclick="closeModal('modalAccion')">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardarAccion" onclick="guardarAccion()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL SEGUIMIENTO ════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalSeguimiento">
+  <div class="modal">
+    <div class="modal-header"><h3>Registrar Seguimiento</h3><button class="modal-close" onclick="closeModal('modalSeguimiento')">✕</button></div>
+    <div id="seguimientoAccionInfo" style="background:var(--surface2);border:1px solid var(--border);padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+    <div class="form-group"><label>Fecha de Seguimiento</label><input type="date" id="sFecha"></div>
+    <div class="form-group"><label>Notas del Coordinador</label><textarea id="sNotas" placeholder="¿Qué encontraste? ¿Qué pasó con esta acción?"></textarea></div>
+    <div class="form-group"><label>Nuevo Estatus</label><select id="sEstatus"><option>Pendiente</option><option>En Proceso</option><option>Cerrado</option></select></div>
+    <input type="hidden" id="sIdAccion">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-ghost" onclick="closeModal('modalSeguimiento')">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardarSeg" onclick="guardarSeguimiento()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MINUTA OVERLAY ════════════════════════════════════════════ -->
+<div class="minuta-overlay" id="minutaOverlay">
+  <div class="minuta-doc">
+    <div class="minuta-toolbar">
+      <div style="font-size:14px;font-weight:600">📄 Minuta WBR</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="imprimirMinuta()">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="cerrarMinuta()">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="minuta-body" id="minutaBody"></div>
+  </div>
+</div>
+
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════════
+  Orden de carga:
+  1. utils.js       → constantes, estado global, API helpers, formatters, loadAll()
+  2. dashboard.js   → filtros de fecha + renderDashboard()
+  3. calificar.js   → sesiones, flujo vendedor, historial
+  4. acciones.js    → plan de acciones + seguimiento
+  5. agenda.js      → calendario mes/semana
+  6. minuta.js      → generación e impresión de minuta
+════════════════════════════════════════════════════════════════ -->
+<script src="js/utils.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/calificar.js"></script>
+<script src="js/acciones.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/minuta.js"></script>
+
+</body>
+</html>

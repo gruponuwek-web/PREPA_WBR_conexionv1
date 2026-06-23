@@ -1,0 +1,41 @@
+/* ============================================================
+   WBR Portal — Estilos del Calendario / Agenda
+   Módulo independiente: solo edita este archivo para cambiar
+   la apariencia del calendario.
+   ============================================================ */
+
+.cal-header-row{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:1px solid var(--border);}
+.cal-day-name{padding:8px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.cal-grid-month{display:grid;grid-template-columns:repeat(7,1fr);}
+.cal-cell{min-height:90px;padding:6px 8px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.cal-cell:nth-child(7n){border-right:none;}
+.cal-cell:hover{background:#f8fafc;}
+.cal-cell.today{background:#eff6ff;}
+.cal-cell.other-month{background:#fafafa;}
+.cal-cell.other-month .cal-date{color:var(--muted);}
+.cal-cell.selected{background:#dbeafe;}
+.cal-date{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.cal-cell.today .cal-date{background:var(--accent);color:#fff;}
+.cal-dot{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-bottom:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.cal-dot.prosp{background:#dbeafe;color:#1d4ed8;}
+.cal-dot.fidel{background:#fef3c7;color:#b45309;}
+.cal-dot.bcg{background:#d1fae5;color:#065f46;}
+.cal-dot.recup{background:#fee2e2;color:#991b1b;}
+.cal-more{font-size:10px;color:var(--muted);cursor:pointer;padding:1px 4px;}
+
+/* ── Vista Semana ── */
+.cal-week-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.cal-week-cell{min-height:140px;padding:8px;border-right:1px solid var(--border);border-top:1px solid var(--border);}
+.cal-week-cell:last-child{border-right:none;}
+.cal-week-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--surface2);}
+.cal-week-hcell{padding:10px 8px;text-align:center;}
+.cal-week-hcell .wday{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.cal-week-hcell .wdate{font-size:18px;font-weight:800;color:var(--text2);margin-top:2px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:4px auto 0;}
+.cal-week-hcell.today-col .wdate{background:var(--accent);color:#fff;}
+.cal-action-card{padding:6px 8px;border-radius:6px;margin-bottom:5px;font-size:11px;cursor:pointer;border-left:3px solid;}
+.cal-action-card.prosp{background:#eff6ff;border-color:#2563eb;}
+.cal-action-card.fidel{background:#fffbeb;border-color:#d97706;}
+.cal-action-card.bcg{background:#ecfdf5;border-color:#059669;}
+.cal-action-card.recup{background:#fef2f2;border-color:#dc2626;}
+.cal-action-card .ac-name{font-weight:600;color:var(--text);}
+.cal-action-card .ac-desc{color:var(--text2);margin-top:1px;}
