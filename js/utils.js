@@ -6,7 +6,7 @@
    (pctPill, badges, fmtDate) y la carga inicial de datos.
    ============================================================ */
 
-const API   = 'https://script.google.com/macros/s/AKfycbwBHju-x9W2fEWTIxYFpjyDBQyWKX21jFRpAdy9Iy_vWGDQsSuaqJW8GxSEM0V-k7NJ/exec';
+const API   = 'https://script.google.com/macros/s/AKfycbwaaLuNN6MQinm4fCyuu06baCJM5lgjAiP_DQUWLcVTm5T3DjpBMAiN5KxPvVUcMWD9/exec';
 const COORD = 'Leonardo Hernández';
 
 // Estado global compartido por todos los módulos
@@ -14,12 +14,20 @@ let state = { equipo:[], kpis:{}, clasificaciones:[], calificaciones:[], accione
 let sesionActiva = null;
 
 // ── HTTP ────────────────────────────────────────────────────────
+// IMPORTANTE: Apps Script requiere Content-Type: text/plain en POST
+// para evitar el preflight CORS. Los GET deben llevar ?action= en la URL.
 async function api(action) {
-  const r = await fetch(`${API}?action=${action}`);
+  const r = await fetch(`${API}?action=${action}&t=${Date.now()}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status} en ${action}`);
   return r.json();
 }
 async function post(action, data) {
-  const r = await fetch(API, { method:'POST', body:JSON.stringify({action,data}), headers:{'Content-Type':'text/plain'} });
+  const r = await fetch(API, {
+    method: 'POST',
+    body: JSON.stringify({ action, data }),
+    headers: { 'Content-Type': 'text/plain' }   // ← NO cambiar: evita preflight CORS
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status} en ${action}`);
   return r.json();
 }
 
