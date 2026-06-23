@@ -6,8 +6,6 @@
    (pctPill, badges, fmtDate) y la carga inicial de datos.
    ============================================================ */
 
-const API   = 'https://script.google.com/macros/s/AKfycbwBHju-x9W2fEWTIxYFpjyDBQyWKX21jFRpAdy9Iy_vWGDQsSuaqJW8GxSEM0V-k7NJ/exec';
-const COORD = 'Leonardo Hernández';
 
 // Estado global compartido por todos los módulos
 let state = { equipo:[], kpis:{}, clasificaciones:[], calificaciones:[], acciones:[], seguimiento:[], descubrimientos:[] };
