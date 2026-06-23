@@ -2,7 +2,12 @@
    WBR Portal — Módulo: Minuta
    ============================================================ */
 
-// Busca nombres de KPIs por rol de forma flexible (trim + case-insensitive)
+// Máximo KPIs por rol — Setter=5, Vendedor=6
+function _maxKpisMinuta(rol) {
+  const m = { 'Setter': 5, 'Vendedor': 6, 'Coordinador': 6 };
+  return m[String(rol||'').trim()] || 6;
+}
+
 function _getKpiNombresMinuta(rol) {
   if (!state.kpis || !rol) return [];
   const r = String(rol).trim();
@@ -30,22 +35,23 @@ function abrirMinuta(sid) {
       const semana = califs[0]?.Semana || '';
 
       const vendHtml = equipo.map(v => {
-        // Usar trim() para evitar problemas con espacios en nombres
         const cal   = califs.find(c => String(c.Vendedor).trim() === String(v.Nombre).trim());
         const desc  = descs.find(d  => String(d.Vendedor).trim() === String(v.Nombre).trim());
         const vActs = acts.filter(a  => String(a.Vendedor).trim() === String(v.Nombre).trim());
         if (!cal && !desc && !vActs.length) return '';
 
-        // Nombres reales de KPIs según el rol
-        const kpiNombres = _getKpiNombresMinuta(cal?.Rol || v.Rol);
+        const rol        = String(cal?.Rol || v.Rol || '').trim();
+        const maxKpis    = _maxKpisMinuta(rol);
+        const kpiNombres = _getKpiNombresMinuta(rol);
+
         const kpiRows = cal
           ? Object.entries(cal)
               .filter(([k]) => k.startsWith('KPI_'))
-              .filter(([k]) => parseInt(k.replace('KPI_','')) <= _maxKpisParaRol(cal?.Rol || v.Rol))
+              .filter(([k]) => parseInt(k.replace('KPI_','')) <= maxKpis)
               .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')))
               .map(([k, val]) => {
                 const idx    = parseInt(k.replace('KPI_','')) - 1;
-                const nombre = (kpiNombres.length > idx && kpiNombres[idx]) ? kpiNombres[idx] : k.replace('KPI_','KPI ');
+                const nombre = (kpiNombres[idx]) ? kpiNombres[idx] : k.replace('KPI_','KPI ');
                 const cumple = val === '✅' || val === true || String(val).toLowerCase() === 'true';
                 return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid #f0f2f6">
                   <span style="color:#4b5563">${nombre}</span>
@@ -54,7 +60,18 @@ function abrirMinuta(sid) {
               }).join('')
           : '';
 
-        const pct = cal ? pctPillFromCal(cal) : '';
+        // Calcular % real desde KPIs
+        let pct = '';
+        if (cal) {
+          const cumplidos = Object.entries(cal)
+            .filter(([k]) => k.startsWith('KPI_'))
+            .filter(([k]) => parseInt(k.replace('KPI_','')) <= maxKpis)
+            .filter(([,v]) => v === '✅' || v === true || String(v).toLowerCase() === 'true')
+            .length;
+          const pctNum = Math.round(cumplidos / maxKpis * 100);
+          const cls = pctNum >= 80 ? 'pct-green' : pctNum >= 50 ? 'pct-yellow' : 'pct-red';
+          pct = `<span class="pct-pill ${cls}">${pctNum}%</span>`;
+        }
 
         const actsHtml = vActs.map(a => `
           <div style="font-size:12px;padding:7px 10px;background:#f8fafc;border-radius:6px;margin-bottom:4px;border-left:3px solid #2563eb">
