@@ -6,6 +6,9 @@
    (pctPill, badges, fmtDate) y la carga inicial de datos.
    ============================================================ */
 
+const API   = 'https://script.google.com/macros/s/AKfycbwBHju-x9W2fEWTIxYFpjyDBQyWKX21jFRpAdy9Iy_vWGDQsSuaqJW8GxSEM0V-k7NJ/exec';
+const COORD = 'Leonardo Hernández';
+
 // Estado global compartido por todos los módulos
 let state = { equipo:[], kpis:{}, clasificaciones:[], calificaciones:[], acciones:[], seguimiento:[], descubrimientos:[] };
 let sesionActiva = null;
@@ -65,7 +68,44 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function pctPill(val) {
   let n = typeof val === 'number' ? val : parseFloat(String(val).replace('%',''));
   if (isNaN(n)) return '<span style="color:var(--muted)">—</span>';
+  // Si el valor es > 1 y parece un conteo (ej. 5 o 6), lo ignoramos
+  // y dejamos que calcPctFromKpis() lo resuelva. Aquí solo manejamos 0..1
   const pct = n <= 1 ? Math.round(n * 100) : Math.round(n);
+  const cls = pct >= 80 ? 'pct-green' : pct >= 50 ? 'pct-yellow' : 'pct-red';
+  return `<span class="pct-pill ${cls}">${pct}%</span>`;
+}
+
+// Calcula % cumplimiento real contando KPI_1..KPI_N directamente
+function calcPctFromKpis(cal, rol) {
+  if (!cal) return null;
+  const kpiNombres = _getKpiNombresForCal(rol);
+  // Entradas KPI que tienen valor no vacío
+  const todasKpis = Object.entries(cal)
+    .filter(([k]) => k.startsWith('KPI_'))
+    .filter(([k,v]) => v !== '' && v !== null && v !== undefined);
+  // Si tenemos nombres de KPIs del rol, usamos ese número como total
+  // Si no, contamos las entradas no vacías
+  const total = kpiNombres.length || todasKpis.length;
+  if (!total) return null;
+  const cumplidos = todasKpis
+    .filter(([k]) => parseInt(k.replace('KPI_','')) <= total)
+    .filter(([k,v]) => v === '✅' || v === true || String(v).toLowerCase() === 'true')
+    .length;
+  return Math.round(cumplidos / total * 100);
+}
+
+function _getKpiNombresForCal(rol) {
+  if (!state.kpis || !rol) return [];
+  const r = String(rol).trim();
+  if (state.kpis[r]) return state.kpis[r];
+  const key = Object.keys(state.kpis).find(k => k.toLowerCase() === r.toLowerCase());
+  return key ? state.kpis[key] : [];
+}
+
+function pctPillFromCal(cal) {
+  if (!cal) return '<span style="color:var(--muted)">—</span>';
+  const pct = calcPctFromKpis(cal, cal.Rol);
+  if (pct === null) return pctPill(cal['% Cumplimiento']);
   const cls = pct >= 80 ? 'pct-green' : pct >= 50 ? 'pct-yellow' : 'pct-red';
   return `<span class="pct-pill ${cls}">${pct}%</span>`;
 }

@@ -221,8 +221,7 @@ function _seccionTitulo(doc, titulo, y, W, M) {
 function _vendedorHeader(doc, v, cal, y, W, M) {
   let pct = null;
   if (cal) {
-    const raw = parseFloat(cal['% Cumplimiento']);
-    if (!isNaN(raw)) pct = raw <= 1 ? Math.round(raw*100) : Math.round(raw);
+    pct = calcPctFromKpis(cal, cal.Rol || v.Rol);
   }
   doc.setFillColor(239,244,255);
   doc.rect(M+2, y, W-M*2-2, 8, 'F');
