@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/vendedor-flow.css">
+<link rel="stylesheet" href="css/export.css">
+<!-- jsPDF para generación de PDFs en el navegador -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -260,21 +263,92 @@
   </div>
 </div>
 
+<!-- ══ PANEL EXPORTAR PDFs ══════════════════════════════════════ -->
+<div class="export-overlay" id="exportPanelOverlay">
+  <div class="export-panel">
+    <div class="export-header">
+      <div>
+        <h3>📄 Exportar Reportes PDF</h3>
+        <p id="exportSesionTitle">—</p>
+      </div>
+      <button class="export-close" onclick="cerrarExportPanel()">✕</button>
+    </div>
+    <input type="hidden" id="exportSesionId">
+
+    <div class="export-body">
+      <div class="export-cards">
+
+        <!-- KPIs -->
+        <div class="export-card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="export-card-icon">📊</span>
+            <span class="export-badge badge-idle" id="badgeKpis">—</span>
+          </div>
+          <div class="export-card-title">KPIs</div>
+          <div class="export-card-sub">Cumplimiento por vendedor</div>
+          <div class="export-card-actions">
+            <button class="btn btn-ghost" onclick="descargarPdf('KPIs')">⬇ Descargar</button>
+            <button class="btn btn-primary" onclick="guardarEnDrive('KPIs')">☁ Drive</button>
+          </div>
+        </div>
+
+        <!-- Descubrimientos -->
+        <div class="export-card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="export-card-icon">🔍</span>
+            <span class="export-badge badge-idle" id="badgeDesc">—</span>
+          </div>
+          <div class="export-card-title">Descubrimientos</div>
+          <div class="export-card-sub">Hallazgos del equipo</div>
+          <div class="export-card-actions">
+            <button class="btn btn-ghost" onclick="descargarPdf('Descubrimientos')">⬇ Descargar</button>
+            <button class="btn btn-primary" onclick="guardarEnDrive('Descubrimientos')">☁ Drive</button>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="export-card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="export-card-icon">⚡</span>
+            <span class="export-badge badge-idle" id="badgeAcc">—</span>
+          </div>
+          <div class="export-card-title">Acciones</div>
+          <div class="export-card-sub">Compromisos y acuerdos</div>
+          <div class="export-card-actions">
+            <button class="btn btn-ghost" onclick="descargarPdf('Acciones')">⬇ Descargar</button>
+            <button class="btn btn-primary" onclick="guardarEnDrive('Acciones')">☁ Drive</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="export-footer">
+        <button class="btn btn-ghost" onclick="descargarTodos()">⬇ Descargar los 3</button>
+        <button class="btn btn-primary" onclick="guardarTodosEnDrive()">☁ Guardar los 3 en Drive</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ SCRIPTS ═══════════════════════════════════════════════════
   Orden de carga:
-  1. utils.js       → constantes, estado global, API helpers, formatters, loadAll()
+  0. config.js      → API url, COORD, DRIVE_FOLDER_ID  ← EDITAR AQUÍ
+  1. utils.js       → estado global, API helpers, formatters, loadAll()
   2. dashboard.js   → filtros de fecha + renderDashboard()
   3. calificar.js   → sesiones, flujo vendedor, historial
   4. acciones.js    → plan de acciones + seguimiento
   5. agenda.js      → calendario mes/semana
   6. minuta.js      → generación e impresión de minuta
+  7. pdf.js         → generación PDFs + descarga + Drive
 ════════════════════════════════════════════════════════════════ -->
+<script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/calificar.js"></script>
 <script src="js/acciones.js"></script>
 <script src="js/agenda.js"></script>
 <script src="js/minuta.js"></script>
+<script src="js/pdf.js"></script>
 
 </body>
 </html>

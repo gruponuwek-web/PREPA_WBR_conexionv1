@@ -381,7 +381,8 @@ function renderHistorial() {
         return `<td>${p !== undefined ? pctPill(p) : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>`;
       }).join('')}
       <td>${prom !== null ? pctPill(prom) : '—'}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="abrirMinuta('${ses.id}')">📄 Minuta</button></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="abrirMinuta('${ses.id}')">📄 Minuta</button>
+          <button class="btn btn-primary btn-sm" onclick="abrirExportPanel('${ses.id}')" style="margin-left:4px">📥 PDFs</button></td>
     </tr>`;
   }).join('');
 
