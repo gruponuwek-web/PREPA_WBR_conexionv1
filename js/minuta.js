@@ -30,10 +30,19 @@ function abrirMinuta(sid) {
         const vActs = acts.filter(a  => a.Vendedor === v.Nombre);
         if (!cal && !desc && !vActs.length) return '';
 
+        // Nombres reales de KPIs según el rol del vendedor
+        const kpiNombres = (state.kpis && cal) ? (state.kpis[cal.Rol] || []) : [];
         const kpiRows = cal
           ? Object.entries(cal).filter(([k]) => k.startsWith('KPI_'))
-              .map(([k,val]) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid #f0f2f6">
-                <span style="color:#4b5563">${k.replace('KPI_','KPI ')}</span><span>${val}</span></div>`).join('')
+              .map(([k, val], i) => {
+                const idx    = parseInt(k.replace('KPI_','')) - 1;
+                const nombre = kpiNombres[idx] || k.replace('KPI_','KPI ');
+                const cumple = val === '✅' || val === true || String(val).toLowerCase() === 'true';
+                return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid #f0f2f6">
+                  <span style="color:#4b5563">${nombre}</span>
+                  <span style="font-size:14px">${cumple ? '✅' : '❌'}</span>
+                </div>`;
+              }).join('')
           : '';
 
         const pct = cal ? pctPill(cal['% Cumplimiento']) : '';
