@@ -82,7 +82,12 @@ function _buildPdf(ses) {
       y += 10; return;
     }
 
-    const kpiEntries = Object.entries(cal).filter(([k]) => k.startsWith('KPI_'));
+    const maxKpis   = kpiNombres.length || 99;
+    const kpiEntries = Object.entries(cal)
+      .filter(([k]) => k.startsWith('KPI_'))
+      .filter(([k, v]) => v !== '' && v !== null && v !== undefined)
+      .filter(([k]) => parseInt(k.replace('KPI_','')) <= maxKpis)
+      .sort(([a],[b]) => parseInt(a.replace('KPI_','')) - parseInt(b.replace('KPI_','')));
 
     if (!kpiEntries.length) {
       doc.setFontSize(8.5); doc.setTextColor(150,150,150);
